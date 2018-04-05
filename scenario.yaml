@@ -1,0 +1,15 @@
+- url: https://www.yahoo.co.jp
+  pageTitle: ヤフーテスト
+  scenario:
+   - label: '(出力する内容シナリオの内容)'
+     title: (未使用)
+     operation:
+      - action: snapshot
+        fileName: '保存ファイル名'
+      - id: srchtxt
+        action: sendKeys
+        text: 大谷翔平
+      - action: click
+        id: srchbtn
+      - action: snapshot
+        fileName: '検索後画面'
