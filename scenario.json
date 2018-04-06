@@ -1,0 +1,1 @@
+{"name":"Untitled Project","url":"https://www.yahoo.co.jp","tests":[{"name":"Untitled","commands":[{"command":"open","target":"/","value":""},{"command":"type","target":"id=srchtxt","value":"大谷翔平"},{"command":"sendKeys","target":"id=srchtxt","value":"${KEY_ENTER}"}]}],"suites":[],"urls":["https://www.yahoo.co.jp"]}
