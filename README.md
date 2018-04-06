@@ -18,8 +18,7 @@ php processor.php -f scenario.yaml -o .\ -h http://localhost:4445/wd/hub
 
 * Every scenario needs operation set.
 * Operation set contains actions.
-* Action has 4 types.
- * snapshot, click, sendKeys, move
+* Action has 4 types snapshot, click, sendKeys, move
 * Select target dom by id, tag, class, xpath 
 
 <pre>
