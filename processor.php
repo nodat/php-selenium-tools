@@ -1,32 +1,54 @@
 <?php
+//namespace Facebook\WebDriver;
+
+use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
 require_once('vendor/autoload.php');
 
-// 初期処理
-$host = 'http://localhost:4444/wd/hub'; // this is the default
-// メモ：start Firefox with 5 second timeout
-// chrome ドライバー用の設定を準備
+// Get command options
+// -f:  set scenario yaml file.
+// -o:  set image output path.
+// -h:  set selenium server url.
+$options = getopt("f:o:h::");
+
+if (!isset($options['f'])) {
+    print "No scenario file.\n";
+    print "-f:  set scenario yaml file. ";
+    exit;
+}
+$scenarioFile = $options['f'];
+
+if (!isset($options['o'])) {
+    print "No image output path.\n";
+    print "-o:  set image output path. ";
+    exit;
+}
+$imagePath = $options['o'];
+
+if (!isset($options['h'])) {
+    $host = 'http://localhost:4444/wd/hub'; // default
+} else {
+    $host = $options['h'];
+}
+
+
+// start Firefox with 5 second timeout
+
+// Chrome Config
 $capabilities = DesiredCapabilities::chrome();
 $options = new ChromeOptions();
 $options->addArguments(array(
     '--window-size=1200,1200',
 ));
 $capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
-// ドライバーを起動
 $driver = RemoteWebDriver::create($host, $capabilities, 5000);
 
-// 画像出力先
-$tempPath = 'd:/temp/';
-if (!file_exists($tempPath)) {
-    mkdir($tempPath, 0777, true);
-}
+// シナリオを読み込み
+$config = file_exists($scenarioFile) ? spyc_load_file($scenarioFile) : [];
 
-// シナリオファイルを読み込み
-$config = file_exists('scenario.yaml') ? spyc_load_file('scenario.yaml') : [];
-
-// navigate to 'http://www.seleniumhq.org/'
+// シナリオを順々に実行する
 foreach ($config as $key => $units) {
     $driver->get($units['url']);
 
@@ -40,7 +62,7 @@ foreach ($config as $key => $units) {
             $element = null;
             // スクリーンショットを保存
             if (isset($operation['fileName']) && isset($operation['action']) && $operation['action'] == 'snapshot') {
-                saveScreenshot($driver, $tempPath, $operation['fileName']);
+                saveScreenshot($driver, $imagePath, $operation['fileName']);
                 continue;
             }
 
@@ -83,27 +105,20 @@ foreach ($config as $key => $units) {
             }
             // スクリーンショットを残す
             if (isset($operation['snapshot']) && $operation['snapshot'] == 'true') {
-                saveScreenshot($driver, $tempPath, $operation['fileName']);
+                saveScreenshot($driver, $imagePath, $operation['fileName']);
             }
         }
     }
 }
 
-// close the Firefox
+// ブラウザを閉じる
 $driver->quit();
+exit;
 
-/**
- * スクリーンショットを保存
- * @param $driver
- * @param $tempPath
- * @param $fileName
- * @param null $element
- * @return string
- * @throws Exception
- */
-function saveScreenshot($driver, $tempPath, $fileName, $element=null) {
+
+function saveScreenshot($driver, $imagePath, $fileName, $element=null) {
     // Change the Path to your own settings
-    $screenshot = $tempPath. $fileName."_".time() . ".png";
+    $screenshot = $imagePath. $fileName."_".time() . ".png";
 
     // Change the driver instance
     $driver->takeScreenshot($screenshot);
@@ -115,18 +130,21 @@ function saveScreenshot($driver, $tempPath, $fileName, $element=null) {
         return $screenshot;
     }
 
-    $element_screenshot = $tempPath . $fileName."_".time() . ".png"; // Change the path here as well
+    $element_screenshot = $imagePath . $fileName."_".time() . ".png"; // Change the path here as well
+
     $element_width = $element->getSize()->getWidth();
     $element_height = $element->getSize()->getHeight();
+
     $element_src_x = $element->getLocation()->getX();
     $element_src_y = $element->getLocation()->getY();
 
-    // 画面を保存
+    // Create image instances
     $src = imagecreatefrompng($screenshot);
     $dest = imagecreatetruecolor($element_width, $element_height);
 
     // Copy
     imagecopy($dest, $src, 0, 0, $element_src_x, $element_src_y, $element_width, $element_height);
+
     imagepng($dest, $element_screenshot);
 
     // unlink($screenshot); // unlink function might be restricted in mac os x.

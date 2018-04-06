@@ -1,8 +1,10 @@
 - url: https://www.yahoo.co.jp
   pageTitle: ヤフーテスト
   scenario:
-   - label: '(出力する内容シナリオの内容)'
-     title: (未使用)
+   - label: 'step 1. '
+     category: 検索テスト
+     title: ヤフーに接続して、検索フォームに「大谷翔平」を入力して検索ボタンを押下します。
+     expect: 検索結果を正しく表示します。
      operation:
       - action: snapshot
         fileName: '保存ファイル名'
